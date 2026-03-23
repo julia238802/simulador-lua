@@ -5,27 +5,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador das Fases da Lua 3D</title>
     <style>
-        /* --- SEU CSS --- */
-        body { margin: 0; background: #000; color: white; font-family: sans-serif; overflow: hidden; }
+        body { 
+            margin: 0; 
+            background: #000; 
+            color: white; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            overflow: hidden;
+        }
+
         #tela-inicio {
             position: fixed; inset: 0; z-index: 100;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: radial-gradient(circle, #111 0%, #000 100%); text-align: center;
+            background: radial-gradient(circle, #111 0%, #000 100%);
+            text-align: center;
         }
-        #simulador { display: none; width: 100vw; height: 100vh; }
-        .painel { flex: 1; position: relative; border-right: 1px solid #222; }
-        .legenda { position: absolute; top: 20px; width: 100%; text-align: center; z-index: 10; color: #aaa; }
-        #nome-fase { top: 60px; font-size: 1.8rem; color: #fff; font-weight: bold; text-shadow: 2px 2px 5px #000; }
-        #controles { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 100; }
-        button { padding: 12px 24px; cursor: pointer; font-weight: bold; border-radius: 30px; border: none; background: #fff; transition: 0.3s; }
-        button:hover { transform: scale(1.1); background: #eee; }
+
+        #simulador { 
+            display: none; 
+            width: 100vw; 
+            height: 100vh; 
+        }
+
+        .painel { 
+            flex: 1; 
+            position: relative; 
+            border-right: 1px solid #333; 
+        }
+
+        .legenda { 
+            position: absolute; 
+            top: 20px; 
+            width: 100%; 
+            text-align: center; 
+            z-index: 10; 
+            color: #eee;
+            text-shadow: 2px 2px 4px #000;
+        }
+
+        #nome-fase { 
+            top: 60px; 
+            font-size: 1.8rem; 
+            font-weight: bold;
+            color: #ffcc00; 
+        }
+
+        #controles { 
+            position: absolute; 
+            bottom: 40px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            z-index: 100; 
+        }
+
+        button {
+            padding: 15px 30px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            border-radius: 30px; 
+            border: none;
+            background: #fff;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        button:hover { 
+            transform: scale(1.1); 
+            background: #ffcc00;
+        }
     </style>
 </head>
 <body>
 
 <div id="tela-inicio">
     <h1>Simulador das Fases da Lua</h1>
-    <p>Visualização 3D Realista</p>
+    <p>Clique abaixo para iniciar a visualização 3D realista</p>
     <button id="btn-entrar">Começar Simulação</button>
 </div>
 
@@ -33,18 +85,19 @@
     <div class="painel" id="lado-esquerdo">
         <div class="legenda">VISÃO DA ÓRBITA</div>
     </div>
-    <div class="painel" id="lado- direito">
+    <div class="painel" id="lado-direito">
         <div class="legenda">VISÃO DA TERRA</div>
         <div class="legenda" id="nome-fase">Lua Nova</div>
     </div>
+    
     <div id="controles">
         <button id="btn-proximo">Próxima Fase ➔</button>
     </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
 <script>
-    /* --- SEU JS CORRIGIDO --- */
     let faseIdx = 0;
     const fases = [
         { nome: "Lua Nova", angulo: 0 },
@@ -59,7 +112,11 @@
 
     let cenaEsq, cameraEsq, rendererEsq, terra, luaEsq;
     let cenaDir, cameraDir, rendererDir, luaDir, luzDir;
+
     const loader = new THREE.TextureLoader();
+    // ESSENCIAL para as imagens aparecerem no GitHub:
+    loader.setCrossOrigin('anonymous'); 
+
     const texTerra = "https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg";
     const texLua = "https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/moon_1024.jpg";
 
@@ -70,9 +127,11 @@
     };
 
     function setup() {
-        const w = window.innerWidth / 2, h = window.innerHeight, pr = window.devicePixelRatio;
+        const w = window.innerWidth / 2;
+        const h = window.innerHeight;
+        const pr = window.devicePixelRatio;
 
-        // LADO ESQUERDO
+        // --- LADO ESQUERDO ---
         cenaEsq = new THREE.Scene();
         cameraEsq = new THREE.PerspectiveCamera(35, w / h, 0.1, 1000);
         rendererEsq = new THREE.WebGLRenderer({ antialias: true });
@@ -80,22 +139,25 @@
         rendererEsq.setPixelRatio(pr);
         document.getElementById('lado-esquerdo').appendChild(rendererEsq.domElement);
 
-        const luzSol = new THREE.DirectionalLight(0xffffff, 1.5);
-        luzSol.position.set(20, 0, 0); 
-        cenaEsq.add(luzSol);
+        const luzSolEsq = new THREE.DirectionalLight(0xffffff, 1.5);
+        luzSolEsq.position.set(20, 0, 0); 
+        cenaEsq.add(luzSolEsq);
         cenaEsq.add(new THREE.AmbientLight(0x222222));
 
-        const tTerra = loader.load(texTerra); tTerra.anisotropy = 16;
+        const tTerra = loader.load(texTerra);
+        tTerra.anisotropy = 16;
         terra = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 64), new THREE.MeshPhongMaterial({ map: tTerra }));
         cenaEsq.add(terra);
 
-        const tLua = loader.load(texLua); tLua.anisotropy = 16;
+        const tLua = loader.load(texLua);
+        tLua.anisotropy = 16;
         luaEsq = new THREE.Mesh(new THREE.SphereGeometry(0.25, 64, 64), new THREE.MeshPhongMaterial({ map: tLua }));
         cenaEsq.add(luaEsq);
 
-        cameraEsq.position.set(0, 12, 0); cameraEsq.lookAt(0,0,0);
+        cameraEsq.position.set(0, 12, 0); 
+        cameraEsq.lookAt(0,0,0);
 
-        // LADO DIREITO
+        // --- LADO DIREITO ---
         cenaDir = new THREE.Scene();
         cameraDir = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
         rendererDir = new THREE.WebGLRenderer({ antialias: true });
@@ -109,16 +171,21 @@
 
         luaDir = new THREE.Mesh(new THREE.SphereGeometry(1.2, 128, 128), new THREE.MeshPhongMaterial({ map: tLua }));
         cenaDir.add(luaDir);
-        cameraDir.position.z = 5;
+        cameraDir.position.z = 5; 
 
-        atualizar(); loop();
+        atualizar();
+        loop();
     }
 
     function atualizar() {
         const fase = fases[faseIdx];
         document.getElementById('nome-fase').innerText = fase.nome;
+
+        // LADO ESQUERDO
         luaEsq.position.x = Math.cos(fase.angulo) * 3.5;
         luaEsq.position.z = -Math.sin(fase.angulo) * 3.5;
+
+        // LADO DIREITO
         luzDir.position.x = -Math.sin(fase.angulo) * 10;
         luzDir.position.z = -Math.cos(fase.angulo) * 10;
     }
